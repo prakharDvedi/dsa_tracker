@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  
+  problems  Problem[]
+  attempts  Attempt[]
+}
+
+model Problem {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title        String
+  platformLink String?
+  platform     String?
+  difficulty   String     // "EASY", "MEDIUM", "HARD"
+  topics       String     // Store as JSON string for SQLite
+  
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  attempts     Attempt[]
+}
+
+model Attempt {
+  id            String   @id @default(cuid())
+  problemId     String
+  problem       Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  attemptNumber Int
+  solvedAt      DateTime @default(now())
+  timeTaken     Int?
+  solved        Boolean
+  notes         String?
+  mistakes      String?
+  codeSnippet   String?
+  approach      String?
+  language      String?
+  
+  createdAt     DateTime @default(now())
+}
