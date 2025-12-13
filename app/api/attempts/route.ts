@@ -32,9 +32,9 @@ export async function POST(request: Request) {
         solved: body.solved,
         timeTaken: body.timeTaken,
         notes: body.notes,
-        codeSnippet: null,
-        approach: null,
-        language: null,
+        codeSnippet: body.codeSnippet,
+        approach: body.approach,
+        language: body.language,
       },
     });
     return NextResponse.json(attempt, { status: 201 });
@@ -49,19 +49,28 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const problemId = searchParams.get("problemId");
 
-    if (!problemId) {
-      return NextResponse.json(
-        { error: "problemId is required" },
-        { status: 400 }
-      );
+    // Get or create default user
+    let user = await prisma.user.findFirst();
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: "default@example.com",
+          name: "Default User",
+          password: "temp",
+        },
+      });
     }
 
     const attempts = await prisma.attempt.findMany({
       where: {
-        problemId: problemId,
+        problemId: problemId as string,
+        userId: user.id,
+      },
+      include: {
+        problem: true,
       },
       orderBy: {
-        attemptNumber: "desc",
+        solvedAt: "desc",
       },
     });
 
