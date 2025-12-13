@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface Problem {
@@ -14,7 +14,6 @@ interface Problem {
 export default function Problems() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
   const handleLogAttempt = (problemId: string) => {
@@ -40,21 +39,6 @@ export default function Problems() {
     fetchProblems();
   }, []);
 
-  const filteredProblems = useMemo(() => {
-    if (!searchTerm) {
-      return problems;
-    }
-    const lowercasedSearchTerm = searchTerm.toLowerCase();
-    return problems.filter(
-      (problem) =>
-        problem.title.toLowerCase().includes(lowercasedSearchTerm) ||
-        problem.topics.some((topic) =>
-          topic.toLowerCase().includes(lowercasedSearchTerm)
-        ) ||
-        problem.platform.toLowerCase().includes(lowercasedSearchTerm)
-    );
-  }, [problems, searchTerm]);
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen text-lg text-gray-300 bg-gray-900">
@@ -70,23 +54,13 @@ export default function Problems() {
           DSA Problems
         </h1>
 
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Search problems by title, topic, or platform..."
-            className="w-full p-4 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-lg"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        {filteredProblems.length === 0 ? (
+        {problems.length === 0 ? (
           <p className="text-center text-gray-500 text-lg">
-            No problems found matching your search.
+            No problems found.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {filteredProblems.map((problem) => (
+            {problems.map((problem) => (
               <div
                 key={problem.id}
                 className="bg-gray-800 shadow-xl rounded-xl p-7 border border-gray-700 hover:border-purple-500 transition-all duration-300 transform hover:-translate-y-1"
