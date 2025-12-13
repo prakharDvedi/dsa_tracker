@@ -153,8 +153,7 @@ export default function ProblemDetailPage() {
                       </span>
                       {attempt.timeTaken && (
                         <span className="ml-2 text-gray-500 text-sm">
-                          ({Math.floor(attempt.timeTaken / 60)}m{" "}
-                          {attempt.timeTaken % 60}s)
+                          ({attempt.timeTaken} min)
                         </span>
                       )}
                     </div>
@@ -189,9 +188,7 @@ export default function ProblemDetailPage() {
                           </h4>
                           <p className="text-gray-600">
                             {attempt.timeTaken
-                              ? `${Math.floor(
-                                  attempt.timeTaken / 60
-                                )} minutes ${attempt.timeTaken % 60} seconds`
+                              ? `${attempt.timeTaken} minutes`
                               : "Not recorded"}
                           </p>
                         </div>
