@@ -1,20 +1,25 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 
 interface Problem {
   id: string;
   platform: string;
   title: string;
   difficulty: string;
-  topics: string[]; // Assuming topics could be an array for better structure
+  topics: string[];
   platformLink?: string;
 }
 
 export default function Problems() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+
   const handleLogAttempt = (problemId: string) => {
-    console.log(`Logging attempt for problem ID: ${problemId}`);
+    console.log(`Logging attempt for problem: ${problemId}`);
+    router.push(`/problems/${problemId}/attempt`);
   };
 
   useEffect(() => {
@@ -35,86 +40,118 @@ export default function Problems() {
     fetchProblems();
   }, []);
 
+  const filteredProblems = useMemo(() => {
+    if (!searchTerm) {
+      return problems;
+    }
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    return problems.filter(
+      (problem) =>
+        problem.title.toLowerCase().includes(lowercasedSearchTerm) ||
+        problem.topics.some((topic) =>
+          topic.toLowerCase().includes(lowercasedSearchTerm)
+        ) ||
+        problem.platform.toLowerCase().includes(lowercasedSearchTerm)
+    );
+  }, [problems, searchTerm]);
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen text-lg">
+      <div className="flex justify-center items-center h-screen text-lg text-gray-300 bg-gray-900">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-4xl font-bold text-center mb-8 text-white">
-        DSA Problems
-      </h1>
-      {problems.length === 0 ? (
-        <p className="text-center text-gray-600">No problems found.</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {problems.map((problem) => (
-            <div
-              key={problem.id}
-              className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <h2 className="text-2xl font-semibold text-gray-900">
-                  {problem.title}
-                </h2>
-                <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
-                  {problem.platform}
-                </span>
-              </div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <strong className="mr-2">Difficulty:</strong>
-                <span
-                  className={`font-medium ${
-                    problem.difficulty.toLowerCase() === "easy"
-                      ? "text-green-600"
-                      : problem.difficulty.toLowerCase() === "medium"
-                      ? "text-yellow-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {problem.difficulty}
-                </span>
-              </div>
-              <div className="text-gray-700 mb-4">
-                <strong className="mr-2">Topics:</strong>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {(Array.isArray(problem.topics)
-                    ? problem.topics
-                    : [problem.topics]
-                  ).map((topic, index) => (
-                    <span
-                      key={index}
-                      className="bg-gray-200 text-gray-700 text-xs font-medium px-2 py-1 rounded-full"
+    <div className="min-h-screen bg-gray-900 text-gray-300 py-8 px-4">
+      <div className="container mx-auto max-w-4xl">
+        <h1 className="text-5xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+          DSA Problems
+        </h1>
+
+        <div className="mb-8">
+          <input
+            type="text"
+            placeholder="Search problems by title, topic, or platform..."
+            className="w-full p-4 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 text-lg"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {filteredProblems.length === 0 ? (
+          <p className="text-center text-gray-500 text-lg">
+            No problems found matching your search.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+            {filteredProblems.map((problem) => (
+              <div
+                key={problem.id}
+                className="bg-gray-800 shadow-xl rounded-xl p-7 border border-gray-700 hover:border-purple-500 transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h2 className="text-3xl font-bold text-white leading-tight">
+                    {problem.title}
+                  </h2>
+                  <span className="bg-purple-600 text-white text-md font-semibold px-3 py-1 rounded-full shadow-md">
+                    {problem.platform}
+                  </span>
+                </div>
+                <div className="flex items-center text-gray-400 mb-3 text-lg">
+                  <strong className="mr-2">Difficulty:</strong>
+                  <span
+                    className={`font-semibold ${
+                      problem.difficulty.toLowerCase() === "easy"
+                        ? "text-green-400"
+                        : problem.difficulty.toLowerCase() === "medium"
+                        ? "text-yellow-400"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {problem.difficulty}
+                  </span>
+                </div>
+                <div className="text-gray-400 mb-6">
+                  <strong className="mr-2 text-lg">Topics:</strong>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {(Array.isArray(problem.topics)
+                      ? problem.topics
+                      : [problem.topics]
+                    ).map((topic, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-700 text-gray-200 text-sm font-medium px-3 py-1 rounded-full shadow-sm hover:bg-gray-600 transition-colors duration-200"
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-3 mt-6">
+                  {problem.platformLink && (
+                    <a
+                      href={problem.platformLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-center bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
-                      {topic}
-                    </span>
-                  ))}
+                      View Problem
+                    </a>
+                  )}
+                  <button
+                    onClick={() => handleLogAttempt(problem.id)}
+                    className="flex-1 text-center bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    Log Attempt
+                  </button>
                 </div>
               </div>
-              {problem.platformLink && (
-                <a
-                  href={problem.platformLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 mr-2"
-                >
-                  View Problem
-                </a>
-              )}
-              <button
-                onClick={() => handleLogAttempt(problem.id)}
-                className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300"
-              >
-                Log Attempt
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
