@@ -6,7 +6,6 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     let user = await prisma.user.findFirst();
-
     if (!user) {
       user = await prisma.user.create({
         data: {
@@ -16,14 +15,16 @@ export async function POST(request: Request) {
         },
       });
     }
-    // i will count attempt and update attempt number
+
     const existAttemptCnt = await prisma.attempt.count({
       where: {
         problemId: body.problemId,
         userId: user.id,
       },
     });
+
     const attemptNumber = existAttemptCnt + 1;
+
     const attempt = await prisma.attempt.create({
       data: {
         userId: user.id,
@@ -32,14 +33,15 @@ export async function POST(request: Request) {
         solved: body.solved,
         timeTaken: body.timeTaken,
         notes: body.notes,
-        codeSnippet: body.codeSnippet,
-        approach: body.approach,
-        language: body.language,
+        codeSnippet: body.codeSnippet || null,
+        approach: body.approach || null,
+        language: body.language || null,
       },
     });
+
     return NextResponse.json(attempt, { status: 201 });
   } catch (error) {
-    console.error("Error in attempt", error);
+    console.error("Error creating attempt:", error);
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
@@ -49,7 +51,6 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const problemId = searchParams.get("problemId");
 
-    // Get or create default user
     let user = await prisma.user.findFirst();
     if (!user) {
       user = await prisma.user.create({
@@ -61,11 +62,13 @@ export async function GET(request: Request) {
       });
     }
 
+    const where: any = { userId: user.id };
+    if (problemId) {
+      where.problemId = problemId;
+    }
+
     const attempts = await prisma.attempt.findMany({
-      where: {
-        problemId: problemId as string,
-        userId: user.id,
-      },
+      where,
       include: {
         problem: true,
       },

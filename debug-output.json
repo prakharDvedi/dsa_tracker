@@ -1,0 +1,62 @@
+{
+  "totalAttempts": 24,
+  "uniqueProblems": 9,
+  "problems": [
+    {
+      "title": "Two Sum",
+      "totalAttempts": 1,
+      "solvedAttempts": 0,
+      "hasAtLeastOneSolved": false
+    },
+    {
+      "title": "Valid Parentheses",
+      "totalAttempts": 2,
+      "solvedAttempts": 0,
+      "hasAtLeastOneSolved": false
+    },
+    {
+      "title": "Merge Two Sorted Lists",
+      "totalAttempts": 1,
+      "solvedAttempts": 0,
+      "hasAtLeastOneSolved": false
+    },
+    {
+      "title": "Trapping Rain Water",
+      "totalAttempts": 7,
+      "solvedAttempts": 6,
+      "hasAtLeastOneSolved": true
+    },
+    {
+      "title": "Binary Tree Inorder Traversal",
+      "totalAttempts": 1,
+      "solvedAttempts": 0,
+      "hasAtLeastOneSolved": false
+    },
+    {
+      "title": "Coin Change",
+      "totalAttempts": 3,
+      "solvedAttempts": 2,
+      "hasAtLeastOneSolved": true
+    },
+    {
+      "title": "Longest Substring Without Repeating Characters",
+      "totalAttempts": 3,
+      "solvedAttempts": 2,
+      "hasAtLeastOneSolved": true
+    },
+    {
+      "title": "Maximum Subarray",
+      "totalAttempts": 3,
+      "solvedAttempts": 3,
+      "hasAtLeastOneSolved": true
+    },
+    {
+      "title": "Merge Intervals",
+      "totalAttempts": 3,
+      "solvedAttempts": 1,
+      "hasAtLeastOneSolved": true
+    }
+  ],
+  "solvedProblems": 5,
+  "successRate": 56
+}

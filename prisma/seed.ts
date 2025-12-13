@@ -99,16 +99,105 @@ async function main() {
     },
   ];
 
+  const createdProblems = [];
   for (const problemData of problems) {
-    await prisma.problem.create({
+    const problem = await prisma.problem.create({
       data: {
         userId: user.id,
         ...problemData,
       },
     });
+    createdProblems.push(problem);
   }
 
   console.log(`✓ Created ${problems.length} problems`);
+
+  // Seed random attempts
+  const notes = [
+    "Struggled with edge cases initially",
+    "Used HashMap approach, worked well",
+    "Need to review this concept again",
+    "Solved after looking at hints",
+    "Clean solution, happy with it!",
+    "Took longer than expected",
+    "Optimized from O(n²) to O(n)",
+    null,
+    null,
+    null, // Some attempts without notes
+  ];
+
+  let attemptCount = 0;
+  const now = new Date();
+
+  // Track which problems have been solved
+  const solvedProblemIds = new Set<string>();
+
+  // First, ensure 3-4 problems have ONLY failed attempts (unsolved)
+  const unsolvedCount = 3;
+  for (let i = 0; i < unsolvedCount; i++) {
+    const problem = createdProblems[i];
+    const numAttempts = Math.floor(Math.random() * 2) + 1; // 1-2 failed attempts
+
+    for (let j = 0; j < numAttempts; j++) {
+      const daysAgo = Math.floor(Math.random() * 30);
+      const solvedAt = new Date(now);
+      solvedAt.setDate(solvedAt.getDate() - daysAgo);
+
+      await prisma.attempt.create({
+        data: {
+          problemId: problem.id,
+          userId: user.id,
+          attemptNumber: j + 1,
+          solved: false, // Explicitly unsolved
+          timeTaken: null,
+          notes: notes[Math.floor(Math.random() * 3)], // Pick from first 3 notes
+          solvedAt,
+        },
+      });
+      attemptCount++;
+    }
+  }
+
+  // Then, create random attempts for remaining problems (mix of solved/unsolved)
+  for (let i = 0; i < 20; i++) {
+    const randomProblem =
+      createdProblems[
+        Math.floor(Math.random() * (createdProblems.length - unsolvedCount)) +
+          unsolvedCount
+      ];
+
+    const existingAttempts = await prisma.attempt.count({
+      where: { problemId: randomProblem.id },
+    });
+
+    const solved = Math.random() > 0.3; // 70% success rate for these
+    const timeTaken = solved ? Math.floor(Math.random() * 90) + 10 : null;
+    const randomNote = notes[Math.floor(Math.random() * notes.length)];
+
+    const daysAgo = Math.floor(Math.random() * 30);
+    const solvedAt = new Date(now);
+    solvedAt.setDate(solvedAt.getDate() - daysAgo);
+
+    await prisma.attempt.create({
+      data: {
+        problemId: randomProblem.id,
+        userId: user.id,
+        attemptNumber: existingAttempts + 1,
+        solved,
+        timeTaken,
+        notes: randomNote,
+        solvedAt,
+      },
+    });
+
+    if (solved) {
+      solvedProblemIds.add(randomProblem.id);
+    }
+
+    attemptCount++;
+  }
+
+  console.log(`✓ Created ${attemptCount} random attempts`);
   console.log("✓ Seed completed successfully!");
 }
 
