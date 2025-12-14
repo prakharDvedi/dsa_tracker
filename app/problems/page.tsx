@@ -19,16 +19,27 @@ export default function Problems() {
   const [platformfilter, setPlatformFilter] = useState("All");
   const router = useRouter();
 
-  const handlDelete = async (id: string, problem: string) => {
-    // Corrected syntax here
+  const handleDelete = async (id: string, problemTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${problemTitle}"?`)) {
+      return;
+    }
     try {
-      // TODO: Implement delete logic
+      const response = await fetch(`/api/problems/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setProblems((prevProblems) => prevProblems.filter((p) => p.id !== id));
+        alert("Problem deleted successfully!");
+      } else {
+        alert("Failed to delete problem");
+      }
     } catch (error) {
       console.error("Error deleting problem:", error);
+      alert("An error occurred while trying to delete the problem.");
     }
   };
   const filtered = problems.filter((problem) => {
-    // Changed problems to problem for clarity
     const match = problem.title.toLowerCase().includes(search.toLowerCase());
     const difficultyMatch =
       difficultyfilter === "All" || problem.difficulty === difficultyfilter;
@@ -161,6 +172,13 @@ export default function Problems() {
                   </div>
                 </div>
                 <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => handleDelete(problem.id, problem.title)}
+                    className="flex-1 text-center bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    Delete
+                  </button>
+
                   {problem.platformLink && (
                     <a
                       href={problem.platformLink}

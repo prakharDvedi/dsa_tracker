@@ -7,7 +7,40 @@ export default function NewProblemPage() {
   const [platform, setPlatform] = useState("");
   const [platformLink, setPlatformLink] = useState("");
   const [difficulty, setDifficulty] = useState("");
-  const [topics, setTopics] = useState("");
+  const [topics, setTopics] = useState<string[]>([]);
+
+  const TOPIC_OPTIONS = [
+    "Array",
+    "String",
+    "Hash Table",
+    "Dynamic Programming",
+    "Math",
+    "Sorting",
+    "Greedy",
+    "DFS",
+    "BFS",
+    "Tree",
+    "Graph",
+    "Binary Search",
+    "Two Pointers",
+    "Sliding Window",
+    "Stack",
+    "Queue",
+    "Linked List",
+    "Heap",
+    "Backtracking",
+    "Recursion",
+    "Divide and Conquer",
+    "Matrix",
+  ];
+
+  const toggleTopic = (topic: string) => {
+    if (topics.includes(topic)) {
+      setTopics(topics.filter((t) => t !== topic));
+    } else {
+      setTopics([...topics, topic]);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +55,7 @@ export default function NewProblemPage() {
           platform,
           platformLink,
           difficulty,
-          topics,
+          topics: topics.join(", "),
         }),
       });
 
@@ -35,7 +68,7 @@ export default function NewProblemPage() {
         setPlatform("");
         setPlatformLink("");
         setDifficulty("");
-        setTopics("");
+        setTopics([]);
       } else {
         const error = await response.json();
         console.log(error);
@@ -126,20 +159,30 @@ export default function NewProblemPage() {
             </select>
           </div>
           <div>
-            <label
-              htmlFor="topics"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Topics
+            <label className="block text-gray-300 text-sm font-bold mb-2">
+              Topics (Select multiple)
             </label>
-            <input
-              type="text"
-              id="topics"
-              value={topics}
-              onChange={(e) => setTopics(e.target.value)}
-              placeholder="Enter Topics (e.g., Array, DP, Graph)"
-              className="shadow appearance-none border border-gray-600 bg-gray-700 rounded w-full py-2 px-3 text-gray-100 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-400"
-            />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto p-3 bg-gray-700 rounded border border-gray-600">
+              {TOPIC_OPTIONS.map((topic) => (
+                <label
+                  key={topic}
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-gray-600 p-2 rounded transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={topics.includes(topic)}
+                    onChange={() => toggleTopic(topic)}
+                    className="w-4 h-4 text-purple-600 bg-gray-600 border-gray-500 rounded focus:ring-purple-500 focus:ring-2"
+                  />
+                  <span className="text-gray-200 text-sm">{topic}</span>
+                </label>
+              ))}
+            </div>
+            {topics.length > 0 && (
+              <p className="mt-2 text-sm text-gray-400">
+                Selected: {topics.join(", ")}
+              </p>
+            )}
           </div>
           <button
             type="submit"
