@@ -19,12 +19,21 @@ export default function Problems() {
   const [platformfilter, setPlatformFilter] = useState("All");
   const router = useRouter();
 
-  const filtered = problems.filter((problems) => {
-    const match = problems.title.toLowerCase().includes(search.toLowerCase());
+  const handlDelete = async (id: string, problem: string) => {
+    // Corrected syntax here
+    try {
+      // TODO: Implement delete logic
+    } catch (error) {
+      console.error("Error deleting problem:", error);
+    }
+  };
+  const filtered = problems.filter((problem) => {
+    // Changed problems to problem for clarity
+    const match = problem.title.toLowerCase().includes(search.toLowerCase());
     const difficultyMatch =
-      difficultyfilter === "All" || problems.difficulty === difficultyfilter;
+      difficultyfilter === "All" || problem.difficulty === difficultyfilter;
     const platformMatch =
-      platformfilter === "All" || problems.platform === platformfilter;
+      platformfilter === "All" || problem.platform === platformfilter;
 
     return match && difficultyMatch && platformMatch;
   });

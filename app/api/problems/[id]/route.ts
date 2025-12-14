@@ -25,3 +25,26 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    await prisma.problem.delete({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Error deleting problem:", error);
+    return NextResponse.json(
+      { error: "Failed to delete problem" },
+      { status: 500 }
+    );
+  }
+  return NextResponse.json(
+    { message: "Problem deleted successfully" },
+    { status: 200 }
+  );
+}
