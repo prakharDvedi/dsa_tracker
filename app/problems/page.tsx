@@ -14,8 +14,20 @@ interface Problem {
 export default function Problems() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [difficultyfilter, setDifficultyFilter] = useState("All");
+  const [platformfilter, setPlatformFilter] = useState("All");
   const router = useRouter();
 
+  const filtered = problems.filter((problems) => {
+    const match = problems.title.toLowerCase().includes(search.toLowerCase());
+    const difficultyMatch =
+      difficultyfilter === "All" || problems.difficulty === difficultyfilter;
+    const platformMatch =
+      platformfilter === "All" || problems.platform === platformfilter;
+
+    return match && difficultyMatch && platformMatch;
+  });
   const handleLogAttempt = (problemId: string) => {
     console.log(`Logging attempt for problem: ${problemId}`);
     router.push(`/problems/${problemId}/attempt`);
@@ -53,14 +65,50 @@ export default function Problems() {
         <h1 className="text-5xl font-extrabold text-center mb-10 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
           DSA Problems
         </h1>
+        {/* Search and Filters */}
+        <div className="mb-8 space-y-4">
+          {/* Search Bar */}
+          <input
+            type="text"
+            placeholder="Search problems..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
 
-        {problems.length === 0 ? (
+          {/* Filters Row */}
+          <div className="flex gap-4">
+            <select
+              value={difficultyfilter}
+              onChange={(e) => setDifficultyFilter(e.target.value)}
+              className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="All">All Difficulties</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+
+            <select
+              value={platformfilter}
+              onChange={(e) => setPlatformFilter(e.target.value)}
+              className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="All">All Platforms</option>
+              <option value="LeetCode">LeetCode</option>
+              <option value="HackerRank">HackerRank</option>
+              <option value="Codeforces">Codeforces</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+        </div>
+        {filtered.length === 0 ? (
           <p className="text-center text-gray-500 text-lg">
             No problems found.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {problems.map((problem) => (
+            {filtered.map((problem) => (
               <div
                 key={problem.id}
                 className="bg-gray-800 shadow-xl rounded-xl p-7 border border-gray-700 hover:border-purple-500 transition-all duration-300 transform hover:-translate-y-1"
