@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import * as recharts from "recharts";
 
 interface Problem {
   id: string;

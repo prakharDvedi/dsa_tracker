@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DSA Tracker
 
-## Getting Started
+## What It Is
 
-First, run the development server:
+DSA Tracker is a web application designed to help developers track their Data Structures and Algorithms (DSA) practice. It serves as a personal log for coding problems sourced from various platforms like LeetCode, HackerRank, and Codeforces. The application allows users to record their solution attempts, monitor their consistency, and visualize their progress over time.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The project is built using a modern full-stack implementation:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: SQLite
+- **ORM**: Prisma
+- **Visualization**: Recharts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How It Works
 
-## Learn More
+The application revolves around two main entities: **Problems** and **Attempts**.
 
-To learn more about Next.js, take a look at the following resources:
+1. **Dashboard**: Provides a snapshot of your progress, including total problems solved, success rate, and visual charts for difficulty distribution and activity history.
+2. **Problem Management**: You can add new problems to the tracker, specifying the title, difficulty level, platform, and related topics. These can be searched and filtered.
+3. **Logging Attempts**: For every problem, you can log multiple attempts. Each attempt captures details such as time taken, status (Success/Failure), and notes on your approach or mistakes.
+4. **Analysis**: The app aggregates your attempt data to calculate statistics, helping you identify weak areas (e.g., specific topics or difficulty levels).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Structure and Routing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project follows the Next.js App Router directory structure:
 
-## Deploy on Vercel
+### File Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `app/`: Contains the main application routes and UI components.
+- `app/api/`: Hosts the backend logic and API endpoints.
+- `lib/`: Utility functions and shared configuration (e.g., Prisma client).
+- `prisma/`: Database schema definitions and seed scripts.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Routing
+
+- `/` or `/dashboard`: The main dashboard view with statistics.
+- `/problems`: A searchable list of all tracked problems.
+- `/problems/new`: Failure-safe form to create a new problem entry.
+- `/problems/[id]`: Detailed view of a specific problem and its history.
+- `/problems/[id]/attempt`: Interface to log a new practice attempt for a problem.
