@@ -1,8 +1,10 @@
 # DSA Tracker
-
+https://dsa-ka-tracker.vercel.app/
 ## What It Is
 
 DSA Tracker is a web application designed to help developers track their Data Structures and Algorithms (DSA) practice. It serves as a personal log for coding problems sourced from various platforms like LeetCode, HackerRank, and Codeforces. The application allows users to record their solution attempts, monitor their consistency, and visualize their progress over time.
+
+<img width="1898" height="979" alt="image" src="https://github.com/user-attachments/assets/a34b0905-7d70-4b8d-a5bc-488450b6c4df" />
 
 ## Tech Stack
 
