@@ -97,6 +97,82 @@ export default function DashboardPage() {
     );
   }, [attempts]);
 
+  //Difficulty Chart
+  const difficultyChartData = useMemo(() => {
+    const difficulties = { Easy: 0, Medium: 0, Hard: 0 };
+    const uniqueProblems = new Map();
+    attempts.forEach((attempt) => {
+      if (!uniqueProblems.has(attempt.problemId)) {
+        uniqueProblems.set(attempt.problemId, attempt.problem);
+      }
+    });
+
+    uniqueProblems.forEach((problem) => {
+      if (problem.difficulty in difficulties) {
+        difficulties[problem.difficulty as keyof typeof difficulties]++;
+      }
+    });
+
+    return [
+      { name: "Easy", value: difficulties.Easy, fill: "#4ade80" },
+      { name: "Medium", value: difficulties.Medium, fill: "#fbbf24" },
+      { name: "Hard", value: difficulties.Hard, fill: "#ef4444" },
+    ].filter((item) => item.value > 0);
+  }, [attempts]);
+
+  // platform chart
+  const platformChartData = useMemo(() => {
+    const platforms: Record<string, number> = {};
+
+    const uniqueProblems = new Map();
+    attempts.forEach((attempt) => {
+      if (!uniqueProblems.has(attempt.problemId)) {
+        uniqueProblems.set(attempt.problemId, attempt.problem);
+      }
+    });
+
+    uniqueProblems.forEach((problem) => {
+      platforms[problem.platform] = (platforms[problem.platform] || 0) + 1;
+    });
+
+    return Object.entries(platforms).map(([name, count]) => ({
+      name,
+      count,
+    }));
+  }, [attempts]);
+
+  //progress chart
+  const progressChartData = useMemo(() => {
+    const last30Days: Record<string, number> = {};
+    const now = new Date();
+
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      last30Days[dateStr] = 0;
+    }
+
+    attempts.forEach((attempt) => {
+      const attemptDate = new Date(attempt.solvedAt);
+      const dateStr = attemptDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      if (dateStr in last30Days) {
+        last30Days[dateStr]++;
+      }
+    });
+
+    return Object.entries(last30Days).map(([date, count]) => ({
+      date,
+      attempts: count,
+    }));
+  }, [attempts]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-950">
@@ -138,6 +214,115 @@ export default function DashboardPage() {
             value={stats.totalAttempts}
             color="bg-pink-600"
           />
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          {/* Difficulty Distribution - Pie Chart */}
+          <div className="bg-gray-800 shadow-xl rounded-xl p-6 border border-gray-700">
+            <h3 className="text-xl font-bold text-white mb-4">
+              Difficulty Distribution
+            </h3>
+            <recharts.ResponsiveContainer width="100%" height={250}>
+              <recharts.PieChart>
+                <recharts.Pie
+                  data={difficultyChartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) =>
+                    `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                  }
+                  outerRadius={80}
+                  dataKey="value"
+                >
+                  {difficultyChartData.map((entry, index) => (
+                    <recharts.Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </recharts.Pie>
+                <recharts.Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "1px solid #374151",
+                    borderRadius: "8px",
+                    color: "#fff",
+                  }}
+                />
+              </recharts.PieChart>
+            </recharts.ResponsiveContainer>
+          </div>
+
+          {/* Platform Distribution - Bar Chart */}
+          <div className="bg-gray-800 shadow-xl rounded-xl p-6 border border-gray-700">
+            <h3 className="text-xl font-bold text-white mb-4">
+              Platform Distribution
+            </h3>
+            <recharts.ResponsiveContainer width="100%" height={250}>
+              <recharts.BarChart data={platformChartData}>
+                <recharts.CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#374151"
+                />
+                <recharts.XAxis
+                  dataKey="name"
+                  stroke="#9ca3af"
+                  tick={{ fill: "#9ca3af" }}
+                />
+                <recharts.YAxis stroke="#9ca3af" tick={{ fill: "#9ca3af" }} />
+                <recharts.Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "1px solid #374151",
+                    borderRadius: "8px",
+                    color: "#fff",
+                  }}
+                />
+                <recharts.Bar
+                  dataKey="count"
+                  fill="#a855f7"
+                  radius={[8, 8, 0, 0]}
+                />
+              </recharts.BarChart>
+            </recharts.ResponsiveContainer>
+          </div>
+
+          {/* Progress Over Time - Line Chart */}
+          <div className="bg-gray-800 shadow-xl rounded-xl p-6 border border-gray-700">
+            <h3 className="text-xl font-bold text-white mb-4">
+              Activity (Last 30 Days)
+            </h3>
+            <recharts.ResponsiveContainer width="100%" height={250}>
+              <recharts.LineChart data={progressChartData}>
+                <recharts.CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#374151"
+                />
+                <recharts.XAxis
+                  dataKey="date"
+                  stroke="#9ca3af"
+                  tick={{ fill: "#9ca3af", fontSize: 10 }}
+                  interval="preserveStartEnd"
+                />
+                <recharts.YAxis stroke="#9ca3af" tick={{ fill: "#9ca3af" }} />
+                <recharts.Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1f2937",
+                    border: "1px solid #374151",
+                    borderRadius: "8px",
+                    color: "#fff",
+                  }}
+                />
+                <recharts.Line
+                  type="monotone"
+                  dataKey="attempts"
+                  stroke="#ec4899"
+                  strokeWidth={2}
+                  dot={{ fill: "#ec4899", r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </recharts.LineChart>
+            </recharts.ResponsiveContainer>
+          </div>
         </div>
 
         <div className="bg-gray-900 shadow-lg rounded-xl p-6 border border-gray-800">
