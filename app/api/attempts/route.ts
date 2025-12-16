@@ -1,25 +1,24 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const session = await getServerSession(authOptions);
 
-    let user = await prisma.user.findFirst();
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: "default@example.com",
-          name: "Default User",
-          password: "temp",
-        },
-      });
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Cast session.user to any to access 'id' since we added it in the callback
+    const userId = (session.user as any).id;
+    const body = await request.json();
 
     const existAttemptCnt = await prisma.attempt.count({
       where: {
         problemId: body.problemId,
-        userId: user.id,
+        userId: userId,
       },
     });
 
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
 
     const attempt = await prisma.attempt.create({
       data: {
-        userId: user.id,
+        userId: userId,
         problemId: body.problemId,
         attemptNumber: attemptNumber,
         solved: body.solved,
@@ -51,18 +50,25 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const problemId = searchParams.get("problemId");
 
-    let user = await prisma.user.findFirst();
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: "default@example.com",
-          name: "Default User",
-          password: "temp",
-        },
+    const session = await getServerSession(authOptions);
+    let userId = "";
+
+    if (session && session.user) {
+      userId = (session.user as any).id;
+    } else {
+      // GUEST MODE: Fetch demo user's data
+      const demoUser = await prisma.user.findUnique({
+        where: { email: "demo@example.com" },
       });
+      if (demoUser) {
+        userId = demoUser.id;
+      } else {
+        // Fallback or empty if seed hasn't run
+        return NextResponse.json([]);
+      }
     }
 
-    const where: any = { userId: user.id };
+    const where: any = { userId: userId };
     if (problemId) {
       where.problemId = problemId;
     }

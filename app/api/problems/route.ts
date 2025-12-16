@@ -1,9 +1,31 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    let userId = "";
+
+    if (session && session.user) {
+      userId = (session.user as any).id;
+    } else {
+      // GUEST MODE: Fetch demo user's data
+      const demoUser = await prisma.user.findUnique({
+        where: { email: "demo@example.com" },
+      });
+      if (demoUser) {
+        userId = demoUser.id;
+      } else {
+        return NextResponse.json([]);
+      }
+    }
+
     const problems = await prisma.problem.findMany({
+      where: {
+        userId: userId,
+      },
       include: {
         attempts: true,
       },
@@ -23,25 +45,19 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const session = await getServerSession(authOptions);
 
-    // For now, using a default user since you don't have auth yet
-    // First, check if a user exists, if not create one
-    let user = await prisma.user.findFirst();
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: "default@example.com",
-          name: "Default User",
-          password: "temp", // You'll implement proper auth later
-        },
-      });
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Cast session.user to any to access 'id' since we added it in the callback
+    const userId = (session.user as any).id;
+    const body = await request.json();
 
     const problem = await prisma.problem.create({
       data: {
-        userId: user.id,
+        userId: userId,
         title: body.title,
         platformLink: body.platformLink || null,
         platform: body.platform || null,

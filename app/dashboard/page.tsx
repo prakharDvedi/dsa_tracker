@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 import * as recharts from "recharts";
 
 interface Problem {
@@ -29,6 +31,7 @@ interface AttemptWithProblem extends Attempt {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [attempts, setAttempts] = useState<AttemptWithProblem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -184,9 +187,25 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-200 py-10 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto max-w-7xl">
-        <h1 className="text-4xl font-bold text-center mb-12 text-purple-300">
+        <h1 className="text-4xl font-bold text-center mb-4 text-purple-300">
           Your DSA Journey
         </h1>
+        {!session && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 p-4 rounded-lg mb-8 text-center max-w-2xl mx-auto">
+            <p className="font-semibold">
+              You are viewing Demo Data (Read Only)
+            </p>
+            <p className="text-sm mt-1 text-yellow-500/80">
+              <Link
+                href="/register"
+                className="underline hover:text-yellow-400"
+              >
+                Create an account
+              </Link>{" "}
+              to track your own progress.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           <StatCard
@@ -470,16 +489,18 @@ export default function DashboardPage() {
                               No notes recorded for this attempt
                             </p>
                           )}
-                          <button
-                            onClick={() =>
-                              router.push(
-                                `/problems/${attempt.problem.id}/attempt`
-                              )
-                            }
-                            className="mt-5 px-4 py-2 bg-purple-600 text-white font-medium rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 transition duration-150 ease-in-out text-sm"
-                          >
-                            Log New Attempt for this Problem
-                          </button>
+                          {session && (
+                            <button
+                              onClick={() =>
+                                router.push(
+                                  `/problems/${attempt.problem.id}/attempt`
+                                )
+                              }
+                              className="mt-5 px-4 py-2 bg-purple-600 text-white font-medium rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 transition duration-150 ease-in-out text-sm"
+                            >
+                              Log New Attempt for this Problem
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
